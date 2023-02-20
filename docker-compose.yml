@@ -1,0 +1,164 @@
+version: "2"
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: "mongodb"
+    hostname: localhost
+    network_mode: "host"
+    ports:
+      - 27017:27017
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    network_mode: "host"
+    ports:
+      - 15672:15672
+      - 5672:5672
+
+  mysql:
+    container_name: "mysql-user"
+    image: mysql
+    hostname: localhost
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=LoginDB
+      - MYSQL_PASSWORD=root
+
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
+    container_name: elasticsearch
+    network_mode: "host"
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=elasticsearch
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - 9200:9200
+      - 9300:9300
+
+#  neo4j:
+#    image: neo4j:4.2.3
+#    container_name: neo4j
+#    restart: always
+#    network_mode: "host"
+#    ports:
+#      - 7474:7474
+#      - 7687:7687
+#    environment:
+#      NEO4J_AUTH: neo4j/password
+
+  eureka-server:
+    image: eureka-server
+    build: eureka-server/
+    container_name: eureka-server
+    restart: always
+    network_mode: "host"
+    hostname: localhost
+    ports:
+      - 8761:8761
+
+  api-gateway:
+    image: api-gateway
+    container_name: api-gateway
+    build: api-gateway/
+    depends_on:
+      - eureka-server
+    restart: always
+    network_mode: "host"
+    hostname: localhost
+    ports:
+      - 8080:8080
+
+  authentication-service:
+    image: authentication-service
+    container_name: authentication-service
+    build: authentication-service/
+    depends_on:
+      - eureka-server
+      - mysql
+    restart: always
+    network_mode: "host"
+    hostname: localhost
+    ports:
+      - 8081:8081
+
+  chat-service:
+    image: chat-service
+    container_name: chat-service
+    build: chat-service/
+    depends_on:
+      - eureka-server
+      - mongodb
+    restart: always
+    network_mode: "host"
+    hostname: localhost
+    ports:
+      - 8084:8084
+
+  product-service:
+    image: product-service
+    container_name: product-service
+    build: product-service/
+    depends_on:
+      - eureka-server
+      - elasticsearch
+    restart: always
+    network_mode: "host"
+    hostname: localhost
+    ports:
+      - 8085:8085
+
+#  recommendation-service:
+#      image: recommendaton-service
+#      container_name: recommendaton-service
+#      build: recommendaton-service/
+#      depends_on:
+#        - eureka-server
+#        - neo4j
+#        - product-service
+#      restart: always
+#      network_mode: "host"
+#      hostname: localhost
+#      ports:
+#        - 8085:8085
+  #
+
+  product-webapp:
+    build: product-webapp/
+    image: product-webapp
+    depends_on:
+      - eureka-server
+      - api-gateway
+    restart: always
+    container_name: product-webapp
+    network_mode: "host"
+    hostname: localhost
+    ports:
+       - "4200:4200"
+
+  prometheus:
+    container_name: prom
+    image: prom/prometheus
+    restart: always
+    network_mode: "host"
+    hostname: localhost
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+
+
+  grafana:
+    container_name: graf
+    image: grafana/grafana
+    restart: always
+    network_mode: "host"
+    hostname: localhost
+    ports:
+      - 3000:3000

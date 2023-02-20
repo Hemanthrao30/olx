@@ -1,0 +1,13 @@
+version: "2"
+
+services:
+  mysql-user:
+    container_name: "mysql-user"
+    image: mysql
+    hostname: localhost
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=UserDataBase
+      - MYSQL_PASSWORD=root

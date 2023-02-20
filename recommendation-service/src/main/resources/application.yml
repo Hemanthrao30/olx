@@ -1,0 +1,36 @@
+server:
+  port: 8086
+spring:
+  data:
+    neo4j:
+      uri: bolt://localhost
+      username: neo4j
+      password: password
+
+
+  cloud:
+    compatibility-verifier:
+      enabled: false
+
+  application:
+    name: Recommendation-service
+rabbitmq:
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+
+  eureka:
+    client:
+      service-url:
+        defaultZone: http://localhost:8761/eureka
+      register-with-eureka: true
+      fetch-registry: true
+
+#  server:
+#    port: 8099
+
+  spring:
+    application:
+      name: "recommendation-service"
+
